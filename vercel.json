@@ -1,0 +1,6 @@
+{
+  "name": "qr-for-you",
+  "rewrites": [
+    { "source": "/(.*)", "destination": "/index.html" }
+  ]
+}
