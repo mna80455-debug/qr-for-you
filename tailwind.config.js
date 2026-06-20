@@ -8,23 +8,23 @@ export default {
   theme: {
     extend: {
       colors: {
-        background: '#F8FAFC',
-        card: '#FFFFFF',
+        background: '#F5EFEB',
+        card: '#FFFDFB',
         accent: {
-          DEFAULT: '#2563EB',
-          hover: '#1D4ED8',
+          DEFAULT: '#C2652A',
+          hover: '#A34F1E',
         },
-        secondary: '#8B5CF6',
-        highlight: '#06B6D4',
-        border: '#E2E8F0',
-        textDark: '#0F172A',
-        textMuted: '#64748B',
+        secondary: '#78706A',
+        highlight: '#8C3C3C',
+        border: '#E7DDD3',
+        textDark: '#36302B',
+        textMuted: '#78706A',
         // Memory Themes colors
-        qrWebsite: '#3B82F6',
-        qrAttendance: '#10B981',
-        qrRestaurant: '#F59E0B',
-        qrEvent: '#8B5CF6',
-        qrPersonal: '#EC4899',
+        qrWebsite: '#C2652A',
+        qrAttendance: '#78706A',
+        qrRestaurant: '#8C3C3C',
+        qrEvent: '#605850',
+        qrPersonal: '#A34F1E',
       },
       fontFamily: {
         display: ['Cairo', 'Plus Jakarta Sans', 'sans-serif'],

@@ -15,11 +15,22 @@ ReactDOM.createRoot(document.getElementById('root')!).render(
   </React.StrictMode>,
 )
 
-// Register PWA Service Worker
+// Unregister PWA Service Worker to prevent caching old versions of the site
 if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js')
-      .then((reg) => console.log('Service Worker registered successfully:', reg.scope))
-      .catch((err) => console.error('Service Worker registration failed:', err));
+  navigator.serviceWorker.getRegistrations().then((registrations) => {
+    if (registrations.length > 0) {
+      for (const registration of registrations) {
+        registration.unregister();
+      }
+      if ('caches' in window) {
+        caches.keys().then((keys) => {
+          Promise.all(keys.map((key) => caches.delete(key))).then(() => {
+            (window as any).location.reload();
+          });
+        });
+      } else {
+        (window as any).location.reload();
+      }
+    }
   });
 }

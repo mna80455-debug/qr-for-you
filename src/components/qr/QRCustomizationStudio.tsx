@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from 'react';
+import { gsap } from 'gsap';
 import qrcode from 'qrcode-generator';
 import { jsPDF } from 'jspdf';
 import { useLanguage } from '../../context/LanguageContext';
@@ -367,16 +368,16 @@ export const QRCustomizationStudio = () => {
     }, 300);
   };
 
-  const [fgColor, setFgColor] = useState('#0F172A');
+  const [fgColor, setFgColor] = useState('#36302B');
   const [bgColor, setBgColor] = useState('#FFFFFF');
   const [gradientType, setGradientType] = useState<'none' | 'linear' | 'radial'>('none');
-  const [gradColor1, setGradColor1] = useState('#6366F1');
-  const [gradColor2, setGradColor2] = useState('#EC4899');
+  const [gradColor1, setGradColor1] = useState('#C2652A');
+  const [gradColor2, setGradColor2] = useState('#8C3C3C');
   const [gradAngle, setGradAngle] = useState(90);
 
   const [dotStyle, setDotStyle] = useState<'square' | 'rounded' | 'circle' | 'diamond' | 'star' | 'classy' | 'extra-rounded' | 'modern-pixel'>('square');
   const [eyeStyle, setEyeStyle] = useState<'square' | 'rounded' | 'circle' | 'diamond' | 'leaf' | 'modern' | 'minimal'>('square');
-  const [eyeColor, setEyeColor] = useState('#0F172A');
+  const [eyeColor, setEyeColor] = useState('#36302B');
 
   const [logo, setLogo] = useState<string | null>(null);
   const [logoSize, setLogoSize] = useState(18);
@@ -385,11 +386,11 @@ export const QRCustomizationStudio = () => {
   // Frames & Borders
   const [frameType, setFrameType] = useState<'none' | 'classic' | 'speech-bubble' | 'minimal-border' | 'business-card'>('none');
   const [frameText, setFrameText] = useState('SCAN ME');
-  const [frameColor, setFrameColor] = useState('#6366F1');
+  const [frameColor, setFrameColor] = useState('#C2652A');
   const [ctaTextSize, setCtaTextSize] = useState(14);
 
   // Studio UX States
-  const [savedColors, setSavedColors] = useState<string[]>(['#0F172A', '#6366F1', '#10B981', '#F59E0B', '#EC4899']);
+  const [savedColors, setSavedColors] = useState<string[]>(['#36302B', '#C2652A', '#8C3C3C', '#78706A', '#605850']);
   const [customTemplates, setCustomTemplates] = useState<QRTemplate[]>([]);
   const [activeTab, setActiveTab] = useState<'templates' | 'content' | 'colors' | 'shapes' | 'logo' | 'frame'>('templates');
   const [zoom, setZoom] = useState(100);
@@ -398,6 +399,9 @@ export const QRCustomizationStudio = () => {
   const [historyIndex, setHistoryIndex] = useState(-1);
 
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const leftColRef = useRef<HTMLDivElement>(null);
+  const rightColRef = useRef<HTMLDivElement>(null);
+  const activeCardRef = useRef<HTMLDivElement>(null);
 
   // Push design settings to Undo/Redo history
   const saveToHistory = (settings: Omit<QRTemplate, 'name'>) => {
@@ -449,7 +453,7 @@ export const QRCustomizationStudio = () => {
     }
   };
 
-  // Load Custom Templates on startup
+  // Load Custom Templates on startup and trigger entry animations
   useEffect(() => {
     const saved = localStorage.getItem('qr_custom_templates');
     if (saved) {
@@ -459,11 +463,62 @@ export const QRCustomizationStudio = () => {
     const initial = getSettingsObj();
     setHistory([initial]);
     setHistoryIndex(0);
+
+    // Initial page load staggering
+    const tl = gsap.timeline({ defaults: { ease: 'power3.out' } });
+    
+    tl.fromTo(leftColRef.current,
+      { x: -40, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.8 }
+    );
+    
+    tl.fromTo(rightColRef.current,
+      { x: 40, opacity: 0 },
+      { x: 0, opacity: 1, duration: 0.8 },
+      '-=0.6'
+    );
+
+    tl.fromTo('.studio-tab',
+      { scale: 0.85, opacity: 0 },
+      { scale: 1, opacity: 1, duration: 0.5, stagger: 0.05, ease: 'back.out(1.7)' },
+      '-=0.4'
+    );
   }, []);
+
+  // Animating activeTab changes
+  useEffect(() => {
+    if (activeCardRef.current) {
+      gsap.fromTo(activeCardRef.current,
+        { y: 15, opacity: 0 },
+        { y: 0, opacity: 1, duration: 0.4, ease: 'power2.out' }
+      );
+      
+      if (activeTab === 'templates') {
+        gsap.fromTo('.template-btn',
+          { scale: 0.9, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.4, stagger: 0.05, ease: 'power3.out', delay: 0.1 }
+        );
+      }
+      
+      if (activeTab === 'content') {
+        gsap.fromTo('.category-btn',
+          { scale: 0.95, opacity: 0 },
+          { scale: 1, opacity: 1, duration: 0.35, stagger: 0.03, ease: 'power3.out', delay: 0.1 }
+        );
+      }
+    }
+  }, [activeTab]);
 
   // Recalculate and Draw QR code on Canvas
   useEffect(() => {
     drawQR();
+    // Pulse animation for QR Code change
+    if (canvasRef.current) {
+      gsap.fromTo(canvasRef.current,
+        { scale: 0.95, opacity: 0.85 },
+        { scale: 1, opacity: 1, duration: 0.4, ease: 'back.out(1.5)' }
+      );
+    }
   }, [
     content, fgColor, bgColor, gradientType, gradColor1, gradColor2, gradAngle,
     dotStyle, eyeStyle, eyeColor, logo, logoSize, protectLogoBackground,
@@ -1015,7 +1070,7 @@ export const QRCustomizationStudio = () => {
     <div className="grid grid-cols-1 lg:grid-cols-12 gap-8 text-right font-body min-h-[600px]">
       
       {/* 1. Left Column: Customization Panel (Col Span 7) */}
-      <div className="lg:col-span-7 space-y-6">
+      <div ref={leftColRef} className="lg:col-span-7 space-y-6 opacity-0">
         
         {/* Customization Navigation tabs */}
         <div className="flex overflow-x-auto gap-2 bg-neutral-100 dark:bg-neutral-900 p-2 rounded-2xl border border-border dark:border-gray-800 scrollbar-none">
@@ -1023,7 +1078,7 @@ export const QRCustomizationStudio = () => {
             <button
               key={t.id}
               onClick={() => setActiveTab(t.id as any)}
-              className={`px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
+              className={`studio-tab px-4 py-2.5 rounded-xl text-xs font-bold whitespace-nowrap transition-all ${
                 activeTab === t.id 
                   ? 'bg-white dark:bg-neutral-800 text-accent shadow-sm' 
                   : 'text-textMuted dark:text-gray-400 hover:text-textDark dark:hover:text-white'
@@ -1034,8 +1089,11 @@ export const QRCustomizationStudio = () => {
           ))}
         </div>
 
-        {/* Tab 1: Templates Panel */}
-        {activeTab === 'templates' && (
+        {/* Tab contents wrapped with activeCardRef and key to trigger entry animation */}
+        <div ref={activeCardRef} key={activeTab} className="space-y-6 opacity-0">
+
+          {/* Tab 1: Templates Panel */}
+          {activeTab === 'templates' && (
           <Card className="border border-border dark:border-gray-800 bg-white dark:bg-neutral-900">
             <CardHeader className="border-b border-border dark:border-gray-800 pb-4">
               <CardTitle>{language === 'ar' ? 'اختر نموذج تصميم جاهز' : 'Choose a Design Template'}</CardTitle>
@@ -1049,7 +1107,7 @@ export const QRCustomizationStudio = () => {
                     <button
                       key={idx}
                       onClick={() => applyTemplate(tmpl)}
-                      className="p-4 rounded-xl border border-border dark:border-gray-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-accent hover:bg-neutral-50 transition-all flex flex-col items-center gap-2 text-center"
+                      className="template-btn p-4 rounded-xl border border-border dark:border-gray-800 bg-neutral-50/50 dark:bg-neutral-800/30 hover:border-accent hover:bg-neutral-50 transition-all flex flex-col items-center gap-2 text-center"
                     >
                       <div className="w-10 h-10 rounded-lg flex items-center justify-center text-white" style={{ background: tmpl.gradientType !== 'none' ? `linear-gradient(${tmpl.gradAngle}deg, ${tmpl.gradColor1}, ${tmpl.gradColor2})` : tmpl.fgColor }}>
                         <Sparkles size={16} />
@@ -1627,7 +1685,7 @@ export const QRCustomizationStudio = () => {
                               setQrSubType(firstSub.id);
                             }
                           }}
-                          className={`flex items-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all text-right ${
+                          className={`category-btn flex items-center gap-2 p-3 rounded-xl border text-xs font-bold transition-all text-right ${
                             isActive 
                               ? 'bg-accent/5 text-accent border-accent shadow-sm' 
                               : 'bg-neutral-50/50 hover:bg-neutral-50 border-border dark:bg-neutral-800/10 dark:border-gray-800 dark:hover:bg-neutral-850'
@@ -2156,10 +2214,12 @@ export const QRCustomizationStudio = () => {
           </Card>
         )}
 
+        </div>
+
       </div>
 
       {/* 2. Right Column: Studio Live Preview & Actions (Col Span 5) */}
-      <div className="lg:col-span-5 space-y-6">
+      <div ref={rightColRef} className="lg:col-span-5 space-y-6 opacity-0">
         
         {/* Undo/Redo & Zoom Quick Actions */}
         <div className="flex items-center justify-between bg-white dark:bg-neutral-900 border border-border dark:border-gray-800 p-3.5 rounded-2xl shadow-sm">
